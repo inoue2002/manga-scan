@@ -115,18 +115,20 @@ export default function Home() {
       </div>
       <div className="w-full flex justify-center space-x-4 mt-4">
         <button
+          onClick={handleCameraSwitch}
+          className={`w-10 h-10 text-white ${!isCameraOn && 'opacity-50 cursor-not-allowed'}`}
+          disabled={!isCameraOn}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-4.553a1 1 0 00-1.414-1.414L13 8.586V4a1 1 0 00-2 0v6a1 1 0 001 1h6a1 1 0 000-2h-4.586l4.553-4.553a1 1 0 00-1.414-1.414L15 10z" />
+          </svg>
+        </button>
+        <button
           onClick={handleCapture}
           className={`w-16 h-16 bg-red-500 text-white rounded-full ${!isCameraOn && 'opacity-50 cursor-not-allowed'}`}
           disabled={!isCameraOn}
         >
           📸
-        </button>
-        <button
-          onClick={handleCameraSwitch}
-          className={`w-16 h-16 bg-green-500 text-white rounded-full ${!isCameraOn && 'opacity-50 cursor-not-allowed'}`}
-          disabled={!isCameraOn}
-        >
-          🔄
         </button>
       </div>
     </main>
