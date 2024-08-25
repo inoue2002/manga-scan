@@ -5,9 +5,9 @@ import { useEffect, useRef, useState } from 'react';
 export default function Home() {
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
-  const [currentCamera, setCurrentCamera] = useState('user');
+  const [currentCamera, setCurrentCamera] = useState('environment'); // Default to external camera
   const [error, setError] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState(true);
+  const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -155,22 +155,137 @@ export default function Home() {
     }
   };
 
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const handleNextStep = () => {
+    if(currentStep === 0) {
+      setShowModal(true);
+    }
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      handleAgree();
+    }
+  };
+
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-4">
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-4">利用規約</h2>
-            <p className="mb-4">ここに利用規約の内容が入ります。</p>
-            <button
-              onClick={handleAgree}
-              className={`px-4 py-2 rounded-lg text-white ${!hasPermission ? 'bg-gray-500' : 'bg-blue-500'}`}
-              disabled={!hasPermission}
-            >
-              {!hasPermission ? '読み込み中...' : '同意する'}
-            </button>
-          </div>
+    <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-blue-500" onClick={currentStep === 0 ? handleNextStep : undefined}>
+      {currentStep === 0 ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue-500">
+          <h1 className="text-white text-6xl font-bold">Mangatopia</h1>
         </div>
+      ) : (
+        showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue-500">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 h-5/6 flex flex-col items-center justify-center">
+              <div className="flex space-x-2 mb-4">
+                {[...Array(4)].map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-3 h-3 rounded-full ${currentStep > index ? 'bg-blue-500' : 'bg-gray-300'}`}
+                  ></div>
+                ))}
+              </div>
+              {currentStep === 1 && (
+                <div className="flex flex-col items-center space-y-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 96 96"
+                    stroke-width="6"
+                    stroke="currentColor"
+                    className="w-24 h-24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M27.308 24.7A9.24 9.24 0 0 1 20.744 28.92c-1.52.216-3.028.448-4.536.7C11.996 30.32 9 34.028 9 38.296V72a9 9 0 0 0 9 9h60a9 9 0 0 0 9-9V38.296c0-4.268-3-7.976-7.208-8.477a191.46 191.46 0 0 0-4.536-.7 9.24 9.24 0 0 1-6.56-4.22l-3.288-5.264a8.768 8.768 0 0 0-6.944-4.156 195.096 195.096 0 0 0-20.928 0 8.768 8.768 0 0 0-6.944 4.156l-3.284 5.264Z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M66 51a18 18 0 1 1-36 0 18 18 0 0 1 36 0ZM75 42h.032v.032H75V42Z"
+                    />
+                  </svg>
+
+                  <p className="mb-4 text-blue-500 font-bold">Select or take a picture.</p>
+                  <button onClick={handleNextStep} className="px-4 py-2 rounded-lg text-black bg-white border border-black font-bold">
+                    Next
+                  </button>
+                </div>
+              )}
+              {currentStep === 2 && (
+                <div className="flex flex-col items-center space-y-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 96 96"
+                    stroke-width="6"
+                    stroke="currentColor"
+                    className="w-24 h-24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M60.168 86.688 54.736 66.4m0 0-10.04 8.9 2.276-37.88 20.908 31.668-13.144-2.688Zm-30.072-1.068A33 33 0 1 1 81 42m-39.848 14.848A21 21 0 1 1 69 42"
+                    />
+                  </svg>
+
+                  <p className="mb-4 text-blue-500 font-bold">Select Onomatopoeia.</p>
+                  <button onClick={handleNextStep} className="px-4 py-2 rounded-lg text-black bg-white border border-black font-bold">
+                    Next
+                  </button>
+                </div>
+              )}
+              {currentStep === 3 && (
+                <div className="flex flex-col items-center space-y-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 96 96"
+                    stroke-width="6"
+                    stroke="currentColor"
+                    className="w-24 h-24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m84 84-20.788-20.788m0 0A30 30 0 1 0 20.784 20.784a30 30 0 0 0 42.428 42.428Z"
+                    />
+                  </svg>
+
+                  <p className="mb-4 text-blue-500 font-bold text-center">Read context and visual information using AI.</p>
+                  <button onClick={handleNextStep} className="px-4 py-2 rounded-lg text-black bg-white border border-black font-bold">
+                    Next
+                  </button>
+                </div>
+              )}
+              {currentStep === 4 && (
+                <div className="flex flex-col items-center space-y-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 96 96"
+                    stroke-width="6"
+                    stroke="currentColor"
+                    className="w-24 h-24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M33 30V24.432c0-4.54 3.38-8.392 7.904-8.768 1.492-.12 2.992-.228 4.492-.32M63 72h9a9 9 0 0 0 9-9V24.432c0-4.54-3.38-8.392-7.904-8.768a193.696 193.696 0 0 0-4.492-.32M63 75v-7.5a13.5 13.5 0 0 0-13.5-13.5h-6a4.5 4.5 0 0 1-4.5-4.5v-6A13.5 13.5 0 0 0 25.5 30H21m47.6-14.656A9.004 9.004 0 0 0 60 9h-6a9.004 9.004 0 0 0-8.6 6.344m23.2 0c.26.84.4 1.732.4 2.656v3h-24V18c0-.924.14-1.816.4-2.656M27 30h-7.5c-2.484 0-4.5 2.016-4.5 4.5v48c0 2.484 2.016 4.5 4.5 4.5h39c2.484 0 4.5-2.016 4.5-4.5V66a36 36 0 0 0-36-36Z"
+                    />
+                  </svg>
+
+                  <p className="mb-4 text-blue-500 font-bold text-center">Get how it&apos;s used in the context.</p>
+                  <button onClick={handleNextStep} className="px-4 py-2 rounded-lg text-black bg-white border border-black font-bold">
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )
       )}
       <div className="relative w-full h-full flex-1 bg-gray-200 rounded-lg overflow-hidden">
         {isCameraOn ? (
@@ -230,7 +345,7 @@ export default function Home() {
         )}
       </div>
       {!capturedImage && (
-        <div className="w-full flex justify-center space-x-4 mt-4">
+        <div className="w-full flex justify-center mt-4">
           <button
             onClick={handleCapture}
             className={`w-16 h-16 bg-red-500 text-white rounded-full ${!isCameraOn && 'opacity-50 cursor-not-allowed'}`}
@@ -238,20 +353,23 @@ export default function Home() {
           >
             📸
           </button>
-          <button
-            onClick={handleCameraSwitch}
-            className={`w-16 h-16 bg-green-500 text-white rounded-full ${
-              !isCameraOn && 'opacity-50 cursor-not-allowed'
-            }`}
-            disabled={!isCameraOn}
-          >
-            🔄
-          </button>
+          <div className="absolute right-4">
+            <button
+              onClick={handleCameraSwitch}
+              className={`w-16 h-16 bg-green-500 text-white rounded-full ${!isCameraOn && 'opacity-50 cursor-not-allowed'}`}
+              disabled={!isCameraOn}
+            >
+              🔄
+            </button>
+          </div>
         </div>
       )}
       <canvas ref={canvasRef} className="hidden" width="640" height="480"></canvas>
       {showInfoModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black bg-opacity-50" onClick={handleModalOutsideClick}>
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black bg-opacity-50"
+          onClick={handleModalOutsideClick}
+        >
           <div
             ref={modalRef}
             className="bg-white rounded-t-lg shadow-lg w-full"
