@@ -96,7 +96,7 @@ export default function Home() {
           setTimeout(() => {
             setDiagnosisComplete(false);
             setShowPolygon(true);
-          }, 1000); // 診断完了メッセージを数秒表示
+          }, 2000); // 診断完了メッセージを数秒表示
         } catch (err) {
           console.error('APIリクエストに失敗しました:', err);
         } finally {
