@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "next": "14.2.6",
+    "openai": "^4.76.3",
     "react": "^18",
     "react-dom": "^18",
     "react-spring-bottom-sheet": "^3.4.1"
