@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useChat, useImageUpload } from './hooks/useImageAnalysis';
 
 export default function Home() {
   const [isCameraOn, setIsCameraOn] = useState(false);
@@ -20,6 +21,10 @@ export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<number | null>(null);
+  const [explanation, setExplanation] = useState<string | null>(null);
+
+  const { uploadImage, isUploading, error: uploadError } = useImageUpload();
+  const { getChatResponse, isLoading: isChatLoading, error: chatError } = useChat();
 
   useEffect(() => {
     requestCameraPermission();
@@ -78,33 +83,90 @@ export default function Home() {
     }
   };
 
-  const handleCapture = async () => {
-    if (isCameraOn && videoRef.current && canvasRef.current) {
-      const context = canvasRef.current.getContext('2d');
-      if (context) {
-        context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
-        const imageData = canvasRef.current.toDataURL('image/png');
-        setCapturedImage(imageData);
-        setIsCameraOn(false);
-        setIsScanning(true);
+  // const handleCapture = async () => {
+  //   if (isCameraOn && videoRef.current && canvasRef.current) {
+  //     const context = canvasRef.current.getContext('2d');
+  //     if (context) {
+  //       context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
+  //       const imageData = canvasRef.current.toDataURL('image/png');
+  //       setCapturedImage(imageData);
+  //       setIsCameraOn(false);
+  //       setIsScanning(true);
 
-        // APIに画像を送信
-        try {
-          await new Promise((resolve) => setTimeout(resolve, 5000));
-          console.log('診断が完了しました');
-          setDiagnosisComplete(true);
-          setTimeout(() => {
+  //       // APIに画像を送信
+  //       try {
+  //         await new Promise((resolve) => setTimeout(resolve, 5000));
+  //         console.log('診断が完了しました');
+  //         setDiagnosisComplete(true);
+  //         setTimeout(() => {
+  //           setDiagnosisComplete(false);
+  //           setShowPolygon(true);
+  //         }, 2000); // 診断完了メッセージを数秒表示
+  //       } catch (err) {
+  //         console.error('APIリクエストに失敗しました:', err);
+  //       } finally {
+  //         setIsScanning(false);
+  //       }
+  //     }
+  //   }
+  // };
+  const handleCapture = async () => {
+  if (isCameraOn && videoRef.current && canvasRef.current) {
+    const context = canvasRef.current.getContext('2d');
+    if (context) {
+      // Capture the image
+      context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
+      
+      const blob = await new Promise<Blob>((resolve) => 
+        canvasRef.current!.toBlob((blob) => resolve(blob!), 'image/png')
+      );
+      
+      const imageFile = new File([blob], 'captured-image.png', { type: 'image/png' });
+      
+      // Set initial state
+      setCapturedImage(URL.createObjectURL(blob));
+      setIsCameraOn(false);
+      setIsScanning(true);
+      setShowPolygon(false);
+      setDiagnosisComplete(false);
+
+      try {
+     
+         // const fileId = await uploadImage(imageFile);
+         // mock
+        const fileId = "0cd89a966331f6a28d9d11326e45c535";
+        
+       
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        if (fileId) {
+          // const response = await getChatResponse(fileId)
+          // mock
+          const response = {
+            "explanation": "The onomatopoeia \"キンジョウ\" suggests a sudden and impactful announcement or declaration. The bold, dynamic lettering against a vibrant yellow background conveys excitement and urgency, as if someone is boldly stepping forward or making a significant statement. The energetic design reflects enthusiasm and determination."
+          };
+
+          if (response) {
+            setExplanation(response.explanation);
+            
+            setIsScanning(false);
+            
+            setDiagnosisComplete(true);
+            
+            // After 2 seconds, show the polygon
+            await new Promise(resolve => setTimeout(resolve, 2000));
             setDiagnosisComplete(false);
             setShowPolygon(true);
-          }, 2000); // 診断完了メッセージを数秒表示
-        } catch (err) {
-          console.error('APIリクエストに失敗しました:', err);
-        } finally {
-          setIsScanning(false);
+          }
         }
+      } catch (err) {
+        console.error('Processing failed:', err);
+        setIsScanning(false);
+        setError('処理に失敗しました');
       }
     }
-  };
+  }
+};
 
   const handleCameraSwitch = () => {
     console.log('カメラを切り替えました');
@@ -123,7 +185,7 @@ export default function Home() {
   };
 
   const handlePolygonClick = (info: string) => {
-    setInfoText(info);
+    setInfoText(explanation || 'No explanation available');
     setShowInfoModal(true);
   };
 

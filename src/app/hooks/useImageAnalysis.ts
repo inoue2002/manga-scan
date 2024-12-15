@@ -1,57 +1,99 @@
 import { useState } from 'react';
 
-interface Point {
-  x: number;
-  y: number;
+interface UploadResponse {
+  fileId: string;
+  codnat?: number[][];
+  convertedimg?: string;
+  message?: string;
 }
 
-interface AnalysisResponse {
+interface ChatResponse {
   explanation: string;
 }
 
-export const useImageAnalysis = () => {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+interface CoordinatesData {
+  fileId: string;
+  codnat: number[][];
+}
 
-  const analyzeImageRegion = async (
-    fileId: string,
-    points: [Point, Point]
-  ): Promise<AnalysisResponse | null> => {
-    setIsAnalyzing(true);
-    setAnalysisError(null);
+interface ResponseType {
+  explanation: string
+}
+
+export const useImageUpload = () => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const uploadImage = async (imageFile: File): Promise<string | null> => {
+    setIsUploading(true);
+    setError(null);
 
     try {
-      const response = await fetch('/api/chat', {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      
+      const coordinates: CoordinatesData = {
+        fileId: "",
+        codnat: [[0, 0], [1000, 1000]]
+      };
+
+      const coordinatesBlob = new Blob([JSON.stringify(coordinates)], { 
+        type: 'application/json' 
+      });
+      formData.append('coordinates', coordinatesBlob, 'coordinates.json');
+
+      const response = await fetch('https://mangatopia-mangatopia.up.railway.app/upload', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileId,
-          points: points.map(p => [p.x, p.y]),
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
-        throw new Error('Analysis failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
       }
 
-      const data = await response.json();
-      setAnalysisResult(data.explanation);
-      return data;
-    } catch (error) {
-      setAnalysisError(error instanceof Error ? error.message : 'Failed to analyze image');
+      const data: UploadResponse = await response.json();
+      return data.fileId;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload image');
+      console.error('Upload error:', err);
       return null;
     } finally {
-      setIsAnalyzing(false);
+      setIsUploading(false);
     }
   };
 
-  return {
-    analyzeImageRegion,
-    isAnalyzing,
-    analysisError,
-    analysisResult,
+  return { uploadImage, isUploading, error };
+};
+
+export const useChat = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getChatResponse = async (fileId: string): Promise<ResponseType | null> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`https://mangatopia-mangatopia.up.railway.app/chat?fileId=${fileId}`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Chat request failed');
+      }
+
+      const data: ChatResponse = await response.json();
+      return {
+        explanation : data.explanation
+      };
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to get chat response');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  return { getChatResponse, isLoading, error };
 };
