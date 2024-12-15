@@ -83,38 +83,10 @@ export default function Home() {
     }
   };
 
-  // const handleCapture = async () => {
-  //   if (isCameraOn && videoRef.current && canvasRef.current) {
-  //     const context = canvasRef.current.getContext('2d');
-  //     if (context) {
-  //       context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
-  //       const imageData = canvasRef.current.toDataURL('image/png');
-  //       setCapturedImage(imageData);
-  //       setIsCameraOn(false);
-  //       setIsScanning(true);
-
-  //       // APIに画像を送信
-  //       try {
-  //         await new Promise((resolve) => setTimeout(resolve, 5000));
-  //         console.log('診断が完了しました');
-  //         setDiagnosisComplete(true);
-  //         setTimeout(() => {
-  //           setDiagnosisComplete(false);
-  //           setShowPolygon(true);
-  //         }, 2000); // 診断完了メッセージを数秒表示
-  //       } catch (err) {
-  //         console.error('APIリクエストに失敗しました:', err);
-  //       } finally {
-  //         setIsScanning(false);
-  //       }
-  //     }
-  //   }
-  // };
   const handleCapture = async () => {
   if (isCameraOn && videoRef.current && canvasRef.current) {
     const context = canvasRef.current.getContext('2d');
     if (context) {
-      // Capture the image
       context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
       
       const blob = await new Promise<Blob>((resolve) => 
@@ -123,7 +95,6 @@ export default function Home() {
       
       const imageFile = new File([blob], 'captured-image.png', { type: 'image/png' });
       
-      // Set initial state
       setCapturedImage(URL.createObjectURL(blob));
       setIsCameraOn(false);
       setIsScanning(true);
@@ -132,19 +103,12 @@ export default function Home() {
 
       try {
      
-         // const fileId = await uploadImage(imageFile);
-         // mock
-        const fileId = "0cd89a966331f6a28d9d11326e45c535";
-        
+         const fileId = await uploadImage(imageFile);
        
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         if (fileId) {
-          // const response = await getChatResponse(fileId)
-          // mock
-          const response = {
-            "explanation": "The onomatopoeia \"キンジョウ\" suggests a sudden and impactful announcement or declaration. The bold, dynamic lettering against a vibrant yellow background conveys excitement and urgency, as if someone is boldly stepping forward or making a significant statement. The energetic design reflects enthusiasm and determination."
-          };
+          const response = await getChatResponse(fileId)
 
           if (response) {
             setExplanation(response.explanation);
@@ -153,7 +117,6 @@ export default function Home() {
             
             setDiagnosisComplete(true);
             
-            // After 2 seconds, show the polygon
             await new Promise(resolve => setTimeout(resolve, 2000));
             setDiagnosisComplete(false);
             setShowPolygon(true);
@@ -163,6 +126,7 @@ export default function Home() {
         console.error('Processing failed:', err);
         setIsScanning(false);
         setError('処理に失敗しました');
+        
       }
     }
   }

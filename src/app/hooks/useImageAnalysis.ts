@@ -1,3 +1,4 @@
+// hooks/useImageAnalysis.ts
 import { useState } from 'react';
 
 interface UploadResponse {
@@ -36,13 +37,12 @@ export const useImageUpload = () => {
         fileId: "",
         codnat: [[0, 0], [1000, 1000]]
       };
-
+      
       const coordinatesBlob = new Blob([JSON.stringify(coordinates)], { 
         type: 'application/json' 
       });
-      formData.append('coordinates', coordinatesBlob, 'coordinates.json');
-
-      const response = await fetch('https://mangatopia-mangatopia.up.railway.app/upload', {
+      formData.append('coordinates', coordinatesBlob);
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
@@ -75,20 +75,22 @@ export const useChat = () => {
     setError(null);
 
     try {
-      const response = await fetch(`https://mangatopia-mangatopia.up.railway.app/chat?fileId=${fileId}`, {
+      const response = await fetch(`/api/chat?fileId=${fileId}`, {
         method: 'GET',
       });
 
       if (!response.ok) {
-        throw new Error('Chat request failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Chat request failed');
       }
 
       const data: ChatResponse = await response.json();
       return {
-        explanation : data.explanation
+        explanation: data.explanation
       };
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to get chat response');
+      console.error('Chat error:', err);
       return null;
     } finally {
       setIsLoading(false);
